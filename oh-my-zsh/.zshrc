@@ -1,5 +1,7 @@
+ZSH_DISABLE_COMPFIX="true"
+
 ## Path to your oh-my-zsh installation
-export ZSH=$HOME/.oh-my-zsh
+export ZSH="${HOME}/.oh-my-zsh"
 
 ## Use Powerlevel
 ZSH_THEME="powerlevel10k/powerlevel10k"
@@ -74,14 +76,10 @@ setopt INC_APPEND_HISTORY
 # do not store duplications
 setopt HIST_IGNORE_DUPS
 
-## Ignore case
-CASE_SENSITIVE="false"
 ## Use cmd+I to accept suggestions
 bindkey "^I" autosuggest-accept
 ## Hide % at start of line
 unsetopt PROMPT_SP
-## Ignore compfix nag
-ZSH_DISABLE_COMPFIX="true"
 
 autoload -U compinit && compinit
 

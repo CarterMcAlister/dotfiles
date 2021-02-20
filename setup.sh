@@ -192,7 +192,7 @@ else
 fi 
 
 e_header "Setting up ZSH configuration and plugins"
-## Install zsh plugins
+## Copying zsh configs
 cp -ri ~/dotfiles/oh-my-zsh/.aliases ~/.aliases 
 cp -ri ~/dotfiles/oh-my-zsh/.zshrc ~/.zshrc   
 cp -ri ~/dotfiles/oh-my-zsh/.p10k.zsh ~/.p10k.zsh
@@ -201,7 +201,7 @@ git clone https://github.com/peterhurford/git-it-on.zsh ~/.oh-my-zsh/custom/plug
 git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-completions  ~/.oh-my-zsh/custom/plugins/zsh-completions
 git clone https://github.com/agkozak/zsh-z ~/.oh-my-zsh/custom/plugins/zsh-z
-
+git clone https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
 # 6. Install ZSH NVM
 
 if test ! $(which nvm); then
@@ -211,9 +211,11 @@ if test ! $(which nvm); then
 
   ## To setup npm install/update -g without sudo
   cp -ri ~/dotfiles/.npmrc ~/.npmrc
-  mkdir "${HOME}/.npm-packages"
-  export PATH="$HOME/.node/bin:$PATH"
-  sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
+  if test [ ! -d ~/.npm-packages]; then
+    mkdir "${HOME}/.npm-packages"
+    export PATH="$HOME/.node/bin:$PATH"
+    sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
+  fi
 
   ## Set npm global config
   npm config set init.author.name "$emailId" ## Replace it with your name
@@ -235,10 +237,20 @@ fi
 e_header "Setting system configurations"
 
 ## Set system configs
-sudo -s source ~/dotfiles/osx/screen.sh
-sudo -s source ~/dotfiles/osx/dock.sh
-sudo -s source ~/dotfiles/osx/browser.sh
-sudo -s source ~/dotfiles/osx/system.sh
+source ~/dotfiles/osx/screen.sh
+source ~/dotfiles/osx/dock.sh
+source ~/dotfiles/osx/browser.sh
+source ~/dotfiles/osx/system.sh
+
+# Disable the sound effects on boot
+sudo nvram SystemAudioVolume=" "
+
+# Hide Spotlight tray-icon (and subsequent helper)
+sudo chmod 600 /System/Library/CoreServices/Search.bundle/Contents/MacOS/Search
+# Disable Spotlight indexing for any volume that gets mounted and has not yet
+# been indexed before.
+# Use `sudo mdutil -i off "/Volumes/foo"` to stop indexing any volume.
+sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
 
 # 9. Wrap up
 
@@ -257,6 +269,6 @@ if [ -d ~/dotfiles ]; then
   sudo rm -R ~/dotfiles
 fi
 
-echo "🍺  Thats all, Done. Note that some of these changes require a logout/restart to take effect."
+e_success "Thats all, Done. Note that some of these changes require a logout/restart to take effect."
 
 # END

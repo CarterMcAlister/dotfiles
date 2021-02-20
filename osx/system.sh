@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Ask for the administrator password upfront
-sudo -v
-
-# Keep-alive: update existing `sudo` time stamp until script has finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
-# Disable the sound effects on boot
-sudo nvram SystemAudioVolume=" "
-
 # Save to disk (not to iCloud) by default
 defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 
@@ -111,7 +102,7 @@ defaults write com.apple.finder WarnOnEmptyTrash -bool false
 chflags nohidden ~/Library
 
 # Show the /Volumes folder
-sudo chflags nohidden /Volumes
+# sudo chflags nohidden /Volumes
 
 # Finder: allow quitting via ⌘ + Q; doing so will also hide desktop icons
 # defaults write com.apple.finder QuitMenuItem -bool true
@@ -161,10 +152,3 @@ defaults write com.apple.ActivityMonitor SortDirection -int 0
 
 # Visualize CPU usage in the Activity Monitor Dock icon
 # defaults write com.apple.ActivityMonitor IconType -int 5
-
-# Hide Spotlight tray-icon (and subsequent helper)
-# sudo chmod 600 /System/Library/CoreServices/Search.bundle/Contents/MacOS/Search
-# Disable Spotlight indexing for any volume that gets mounted and has not yet
-# been indexed before.
-# Use `sudo mdutil -i off "/Volumes/foo"` to stop indexing any volume.
-# sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
