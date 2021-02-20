@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Run without downloading by running in your home directory:
 # curl https://raw.githubusercontent.com/CarterMcAlister/dotfiles/master/setup.sh | bash
@@ -89,16 +89,23 @@ e_note() {
 
 ## End utilities
 
-
 # Welcome msg
 
 e_bold "${tan}┌──────────────────────────────────────────────────────────────┐
-|                                                              |
-| Hello $(whoami)!                                             |
-|                                                              |
-| Let's get your machine set up.                               |
-|                                                              |
+                                                               
+  Hello $(whoami)!                                             
+                                                               
+  Let's get your machine set up.                               
+                                                              
 └──────────────────────────────────────────────────────────────┘"
+
+e_bold "${tan}Please grant sudo permissions"
+
+# Ask for the administrator password upfront
+sudo -v
+
+# Keep-alive: update existing `sudo` time stamp until script has finished
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 ## Create Code directory
 mkdir -p "${HOME}/Code"
@@ -122,15 +129,28 @@ else
 fi
 
 ## Get dotfiles
-e_header "Getting dotfiles"
-git clone git@github.com:CarterMcalister/dotfiles.git "${HOME}/dotfiles"
-cp ~/dotfiles/bin_scripts ~/.bin_scripts 
+if [ -d ~/dotfiles ]; then
+  ask "${blue} ~/dotfiles already exists. Replace and continue (y/n): "
+  read -r replace
+fi
 
+if [[ "$replace" == "n" || "$replace" == "no" ]]; then
+  exit
+fi
+
+if [[ "$replace" == "y" || "$replace" == "yes" ]]; then
+  rm -rf ~/dotfiles
+fi
+
+e_header "Getting dotfiles"
+git clone https://github.com/CarterMcAlister/dotfiles.git "${HOME}/dotfiles"
+cp -ri ~/dotfiles/bin_scripts ~/.bin_scripts 
+  
 
 # 3. Git configuration
 
 e_header "Setup git config (global)"
-cp ~/dotfiles/.gitignore_global ~/.gitignore_global  ## Adding .gitignore global
+cp -ri ~/dotfiles/.gitignore_global ~/.gitignore_global
 git config --global core.excludesfile "${HOME}/.gitignore_global"
 
 ask "${blue} Enter Your Github Email: "
@@ -139,7 +159,8 @@ if is_empty $emailId; then
   git config --global user.email "$emailId" ## Git Email Id
   e_success "Email is set"
 else
-  e_error "Not set"
+  e_error "Email is required"
+  exit
 fi
 
 ask "${blue} Enter Your Github Username: "
@@ -148,39 +169,38 @@ if is_empty $userName; then
   git config --global user.name "$userName" ## Git Username
   e_success "Username is set"
 else
-  e_error "Not set"
+  e_error "Username is required"
+  exit
 fi
 
 # 4. Install applications
 
 e_header "Installing Applications with Brew"
-cp ~/dotfiles/Brewfile ~/Brewfile  
-brew bundle install
+cp -ri ~/dotfiles/Brewfile ~/Brewfile  
+# brew bundle install
 
 
 # 5. Install Oh-My-Zsh & custom aliases
 
 ZSH=~/.oh-my-zsh
 
-if [ -d "$ZSH" ]; then
+if [ -d $ZSH ]; then
   e_warning "Oh My Zsh is already installed. Skipping.."
 else
   e_header "Installing Oh My Zsh..."
   curl -L http://install.ohmyz.sh | sh
-
-  ## To install ZSH plugins & configs
-  e_header "Setting up ZSH configuration and plugins"
-	## Install zsh plugins
-  cp ~/dotfiles/oh-my-zsh/.aliases ~/.aliases 
-  cp ~/dotfiles/oh-my-zsh/.zshrc ~/.zshrc   
-  cp ~/dotfiles/oh-my-zsh/.p10k.zsh ~/.p10k.zsh
-	## Install zsh plugins
-  git clone https://github.com/peterhurford/git-it-on.zsh ~/.oh-my-zsh/custom/plugins/git-it-on
-  git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-  git clone https://github.com/zsh-users/zsh-completions  ~/.oh-my-zsh/custom/plugins/zsh-completions
-	git clone https://github.com/agkozak/zsh-z ~/.oh-my-zsh/custom/plugins/zsh-z
 fi 
-#todo: add other plugins
+
+e_header "Setting up ZSH configuration and plugins"
+## Install zsh plugins
+cp -ri ~/dotfiles/oh-my-zsh/.aliases ~/.aliases 
+cp -ri ~/dotfiles/oh-my-zsh/.zshrc ~/.zshrc   
+cp -ri ~/dotfiles/oh-my-zsh/.p10k.zsh ~/.p10k.zsh
+## Install zsh plugins
+git clone https://github.com/peterhurford/git-it-on.zsh ~/.oh-my-zsh/custom/plugins/git-it-on
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-completions  ~/.oh-my-zsh/custom/plugins/zsh-completions
+git clone https://github.com/agkozak/zsh-z ~/.oh-my-zsh/custom/plugins/zsh-z
 
 # 6. Install ZSH NVM
 
@@ -190,7 +210,7 @@ if test ! $(which nvm); then
   git clone https://github.com/lukechilds/zsh-nvm ~/.oh-my-zsh/custom/plugins/zsh-nvm
 
   ## To setup npm install/update -g without sudo
-  cp ~/dotfiles/.npmrc ~/.npmrc
+  cp -ri ~/dotfiles/.npmrc ~/.npmrc
   mkdir "${HOME}/.npm-packages"
   export PATH="$HOME/.node/bin:$PATH"
   sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
@@ -213,18 +233,12 @@ fi
 
 # 8. System configuration
 e_header "Setting system configurations"
-e_note "Please grant sudo permissions"
-
-## Ask for the administrator password
-sudo -v
-## Keep-alive: update existing `sudo` time stamp until script has finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 ## Set system configs
-source ~/dotfiles/osx/screen.sh
-source ~/dotfiles/osx/dock.sh
-source ~/dotfiles/osx/system.sh
-source ~/dotfiles/osx/browser.sh
+sudo -s source ~/dotfiles/osx/screen.sh
+sudo -s source ~/dotfiles/osx/dock.sh
+sudo -s source ~/dotfiles/osx/system.sh
+sudo -s source ~/dotfiles/osx/browser.sh
 
 # 9. Wrap up
 
