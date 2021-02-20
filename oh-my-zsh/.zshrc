@@ -83,11 +83,6 @@ setopt INC_APPEND_HISTORY
 # do not store duplications
 setopt HIST_IGNORE_DUPS
 
-## Use cmd+I to accept suggestions
-bindkey "^I" autosuggest-accept
-## Hide % at start of line
-unsetopt PROMPT_SP
-
 autoload -U compinit && compinit
 
 > # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
