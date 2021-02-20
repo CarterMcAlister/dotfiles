@@ -237,8 +237,8 @@ e_header "Setting system configurations"
 ## Set system configs
 sudo -s source ~/dotfiles/osx/screen.sh
 sudo -s source ~/dotfiles/osx/dock.sh
-sudo -s source ~/dotfiles/osx/system.sh
 sudo -s source ~/dotfiles/osx/browser.sh
+sudo -s source ~/dotfiles/osx/system.sh
 
 # 9. Wrap up
 
